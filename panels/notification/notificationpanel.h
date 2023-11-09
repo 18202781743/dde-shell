@@ -6,6 +6,7 @@
 
 #include "panel.h"
 #include "bubblemodel.h"
+#include "notificationinterproxy.h"
 #include <QQuickItem>
 
 DS_BEGIN_NAMESPACE
@@ -33,6 +34,13 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void hideNotification();
+    void onShowBubble(const QString &appName, uint replaceId,
+                      const QString &appIcon, const QString &summary,
+                      const QString &body, const QStringList &actions,
+                      const QVariantMap hints, int expireTimeout,
+                      const QVariantMap bubbleParams);
+
+    void onBubbleTimeout();
 private:
     void setVisible(const bool visible);
     void showNotification();
@@ -40,6 +48,7 @@ private:
 private:
     bool m_visible = false;
     BubbleModel *m_bubbles = nullptr;
+    NotificationInterProxy *m_interproxy = nullptr;
 };
 
 }

@@ -20,7 +20,8 @@ class BubbleItem : public QObject
     Q_PROPERTY(QString iconName READ iconName CONSTANT)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
 public:
-    explicit BubbleItem(const QString &title, const QString &text, const QString &iconName);
+    explicit BubbleItem();
+    explicit BubbleItem(const QString &text, const QString &title, const QString &iconName);
 
     QString text() const;
     QString title() const;
@@ -28,9 +29,23 @@ public:
     int level() const;
 
     void setLevel(int newLevel);
+    void setParams(const QString &appName, int id, const QStringList &actions,
+                   const QVariantMap hints, int replaceId, const int timeout,
+                   const QVariantMap bubbleParams);
 
 Q_SIGNALS:
     void levelChanged();
+
+    void timeout();
+
+public:
+    QString m_appName;
+    int m_id = 0;
+    QStringList m_actions;
+    QVariantMap m_hints;
+    int m_replaceId;
+    int m_timeout = 0;
+    QVariantMap m_extraParams;
 
 private:
     QString m_text;
@@ -49,6 +64,10 @@ public:
         IconName,
         Level
     } BubbleRule;
+    enum {
+        Timeout,
+        User
+    } BubbleReleaseReason;
 
     explicit BubbleModel(QObject *parent = nullptr);
 
@@ -56,6 +75,7 @@ public:
     void clear();
     QList<BubbleItem *> items() const;
     Q_INVOKABLE void remove(int index);
+    void remove(BubbleItem *bubble);
 
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;

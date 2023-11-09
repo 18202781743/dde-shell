@@ -35,7 +35,7 @@ Control {
             name: control.iconName
         }
         Text {
-            text: control.text + " - " + control.level
+            text: control.text
         }
         D.ActionButton {
             icon.name: "window_close"

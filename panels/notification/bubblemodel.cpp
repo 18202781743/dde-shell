@@ -7,6 +7,7 @@
 #include <QDBusConnection>
 #include <QDBusPendingCall>
 #include <QDBusReply>
+#include <QTimer>
 #include <QLoggingCategory>
 
 #include <DDBusSender>
@@ -15,9 +16,14 @@ namespace ds {
 //DS_BEGIN_NAMESPACE
 namespace notification {
 
-BubbleItem::BubbleItem(const QString &title, const QString &text, const QString &iconName)
-    : m_title(title)
-    , m_text(text)
+BubbleItem::BubbleItem()
+{
+
+}
+
+BubbleItem::BubbleItem(const QString &text, const QString &title, const QString &iconName)
+    : m_text(text)
+    , m_title(title)
     , m_iconName(iconName)
 {
 
@@ -51,6 +57,24 @@ void BubbleItem::setLevel(int newLevel)
     emit levelChanged();
 }
 
+void BubbleItem::setParams(const QString &appName, int id, const QStringList &actions, const QVariantMap hints, int replaceId, const int timeout, const QVariantMap bubbleParams)
+{
+    m_appName = appName;
+    m_id = id;
+    m_actions = actions;
+    m_hints = hints;
+    m_replaceId = replaceId;
+    m_timeout = timeout;
+    m_extraParams = bubbleParams;
+    if (m_timeout > 0) {
+        auto timer = new QTimer(this);
+        timer->setSingleShot(true);
+        timer->setInterval(m_timeout);
+        QObject::connect(timer, &QTimer::timeout, this, &BubbleItem::timeout);
+        timer->start();
+    }
+}
+
 BubbleModel::BubbleModel(QObject *parent)
 {
 
@@ -58,6 +82,10 @@ BubbleModel::BubbleModel(QObject *parent)
 
 void BubbleModel::push(BubbleItem *item)
 {
+//    if (m_bubbles.count() >= 5) {
+//        remove(m_bubbles.count() - 1);
+//    }
+
     beginInsertRows(QModelIndex(), 0, 0);
     m_bubbles.prepend(item);
     endInsertRows();
@@ -84,9 +112,18 @@ QList<BubbleItem *> BubbleModel::items() const
 void BubbleModel::remove(int index)
 {
     beginRemoveRows(QModelIndex(), index, index);
+    m_bubbles[index]->deleteLater();
     m_bubbles.remove(index);
     endRemoveRows();
     updateLevel();
+}
+
+void BubbleModel::remove(BubbleItem *bubble)
+{
+    const auto index = m_bubbles.indexOf(bubble);
+    if (index >= 0) {
+        remove(index);
+    }
 }
 
 int BubbleModel::rowCount(const QModelIndex &parent) const

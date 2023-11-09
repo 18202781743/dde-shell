@@ -27,27 +27,20 @@ NotificationPanel::NotificationPanel(QObject *parent)
 
 void NotificationPanel::load()
 {
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    if (!bus.registerService("org.deepin.dde.Shell")) {
-        qWarning() << "register failed" << bus.lastError().message();
-    }
-
     DPanel::load();
 }
 
 void NotificationPanel::init()
 {
-    auto bus = QDBusConnection::sessionBus();
-    bus.registerObject(QStringLiteral("/org/deepin/notificationService"),
-                       this,
-                       QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
-
     DPanel::init();
+
+    m_interproxy = new NotificationInterProxy(this);
+    QObject::connect(m_interproxy, &NotificationInterProxy::ShowBubble, this, &NotificationPanel::onShowBubble);
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(1000);
-    timer->setSingleShot(false);
-    timer->start(1000);
+    timer->setSingleShot(true);
+//    timer->start(1000);
     connect(timer, &QTimer::timeout, this, [this, timer]() {
         if (m_bubbles->rowCount(QModelIndex()) >= 5) {
             timer->stop();
@@ -71,6 +64,37 @@ bool NotificationPanel::visible() const
 void NotificationPanel::hideNotification()
 {
     setVisible(false);
+}
+
+void NotificationPanel::onShowBubble(const QString &appName, uint replaceId,
+                                     const QString &appIcon, const QString &summary,
+                                     const QString &body, const QStringList &actions,
+                                     const QVariantMap hints, int expireTimeout,
+                                     const QVariantMap bubbleParams)
+{
+    qDebug() << "Received bubble" << appName << replaceId << appIcon << summary << body
+             << actions << hints << expireTimeout << bubbleParams;
+    const auto id = bubbleParams["id"].toUInt();
+    auto bubble = new BubbleItem(summary,
+                               body,
+                               appIcon);
+    QObject::connect(bubble, &BubbleItem::timeout, this, &NotificationPanel::onBubbleTimeout);
+    bubble->setParams(appName, id, actions, hints, replaceId, expireTimeout, bubbleParams);
+    for (auto item : m_bubbles->items()) {
+        if (item->m_replaceId == bubble->m_replaceId &&
+            item->m_appName == bubble->m_appName) {
+        }
+    }
+    m_bubbles->push(bubble);
+}
+
+void NotificationPanel::onBubbleTimeout()
+{
+    auto bubble = qobject_cast<BubbleItem *>(sender());
+    if (!bubble)
+        return;
+
+    m_bubbles->remove(bubble);
 }
 
 void NotificationPanel::showNotification()

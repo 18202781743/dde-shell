@@ -15,10 +15,10 @@ Window {
     visible: true
     width: 500
     height: 600
-    DLayerShellWindow.topMargin: 10
-    DLayerShellWindow.leftMargin: 800
-    DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
-    DLayerShellWindow.anchors: DLayerShellWindow.AnchorTop
+//    DLayerShellWindow.topMargin: 10
+//    DLayerShellWindow.leftMargin: 800
+//    DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
+//    DLayerShellWindow.anchors: DLayerShellWindow.AnchorTop
 
     Repeater  {
         width: root.width
@@ -32,5 +32,5 @@ Window {
             index: model.index
         }
     }
-    color: "transparent"
+//    color: "transparent"
 }

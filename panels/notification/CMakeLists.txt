@@ -5,6 +5,8 @@
 add_library(notificationpanel SHARED
     notificationpanel.cpp
     notificationpanel.h
+    notificationinterproxy.cpp
+    notificationinterproxy.h
     bubblemodel.cpp
     bubblemodel.h
     test.sh
