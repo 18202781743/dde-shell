@@ -14,9 +14,9 @@ RowLayout {
 
     D.Button {
         Layout.preferredWidth: 60
-        text: bubble.defaultActionText
+        text: bubble.firstActionText
         onClicked: {
-            actionInvoked(bubble.defaultActionId)
+            actionInvoked(bubble.firstActionId)
         }
     }
 

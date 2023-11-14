@@ -19,7 +19,7 @@ class BubbleItem : public QObject
     Q_PROPERTY(QString title READ title CONSTANT)
     Q_PROPERTY(QString iconName READ iconName CONSTANT)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
-    Q_PROPERTY(bool hasAction READ hasAction CONSTANT)
+    Q_PROPERTY(bool hasDisplayAction READ hasDisplayAction CONSTANT)
 public:
     explicit BubbleItem();
     explicit BubbleItem(const QString &text, const QString &title, const QString &iconName);
@@ -37,9 +37,12 @@ public:
 
     QVariantMap toMap() const;
 
-    bool hasAction() const;
+    bool hasDisplayAction() const;
+    bool hasDefaultAction() const;
     QString defaultActionText() const;
     QString defaultActionId() const;
+    QString firstActionText() const;
+    QString firstActionId() const;
     QStringList actionTexts() const;
     QStringList actionIds() const;
 
@@ -47,6 +50,10 @@ Q_SIGNALS:
     void levelChanged();
 
     void timeout();
+private:
+    int defaultActionIdIndex() const;
+    int defaultActionTextIndex() const;
+    QStringList displayActions() const;
 
 public:
     QString m_appName;
@@ -74,8 +81,10 @@ public:
         Title,
         IconName,
         Level,
-        HasAction,
-        DefaultActionText,
+        hasDefaultAction,
+        hasDisplayAction,
+        FirstActionText,
+        FirstActionId,
         DefaultActionId,
         ActionTexts,
         ActionIds,

@@ -100,37 +100,85 @@ QVariantMap BubbleItem::toMap() const
 
 QString BubbleItem::defaultActionText() const
 {
-    if (!hasAction())
+    const auto index = defaultActionTextIndex();
+    if (index < 0)
         return QString();
-    return m_actions[1];
+    return m_actions[index];
 }
 
 QString BubbleItem::defaultActionId() const
 {
-    if (!hasAction())
+    const auto index = defaultActionIdIndex();
+    if (index < 0)
         return QString();
-    return m_actions[0];
+    return m_actions[index];
+}
+
+QString BubbleItem::firstActionText() const
+{
+    if (!hasDisplayAction())
+        return QString();
+    return displayActions()[1];
+}
+
+QString BubbleItem::firstActionId() const
+{
+    if (!hasDisplayAction())
+        return QString();
+    return displayActions()[0];
 }
 
 QStringList BubbleItem::actionTexts() const
 {
     QStringList res;
-    for (int i = 3; i < m_actions.count(); i += 2)
-        res << m_actions[i];
+    const auto tmp = displayActions();
+    for (int i = 3; i < tmp.count(); i += 2)
+        res << tmp[i];
     return res;
 }
 
 QStringList BubbleItem::actionIds() const
 {
     QStringList res;
-    for (int i = 2; i < m_actions.count(); i += 2)
-        res << m_actions[i];
+    const auto tmp = displayActions();
+    for (int i = 2; i < tmp.count(); i += 2)
+        res << tmp[i];
     return res;
 }
 
-bool BubbleItem::hasAction() const
+int BubbleItem::defaultActionIdIndex() const
 {
-    return m_actions.count() >= 2;
+    return m_actions.indexOf("default");
+}
+
+int BubbleItem::defaultActionTextIndex() const
+{
+    const auto index = defaultActionTextIndex();
+    if (index >= 0)
+        return index + 1;
+    return -1;
+}
+
+QStringList BubbleItem::displayActions() const
+{
+    const auto defaultIndex = defaultActionIdIndex();
+    if (defaultIndex >= 0) {
+        auto tmp = m_actions;
+        tmp.remove(defaultIndex, 2);
+        return tmp;
+    }
+    return m_actions;
+}
+
+bool BubbleItem::hasDisplayAction() const
+{
+    const auto tmp = displayActions();
+    return tmp.count() >= 2;
+}
+
+bool BubbleItem::hasDefaultAction() const
+{
+    return defaultActionIdIndex() >= 0;
 }
 
 BubbleModel::BubbleModel(QObject *parent)
@@ -205,10 +253,14 @@ QVariant BubbleModel::data(const QModelIndex &index, int role) const
         return m_bubbles[row]->iconName();
     case BubbleModel::Level:
         return m_bubbles[row]->level();
-    case BubbleModel::HasAction:
-        return m_bubbles[row]->hasAction();
-    case BubbleModel::DefaultActionText:
-        return m_bubbles[row]->defaultActionText();
+    case BubbleModel::hasDisplayAction:
+        return m_bubbles[row]->hasDisplayAction();
+    case BubbleModel::hasDefaultAction:
+        return m_bubbles[row]->hasDefaultAction();
+    case BubbleModel::FirstActionText:
+        return m_bubbles[row]->firstActionText();
+    case BubbleModel::FirstActionId:
+        return m_bubbles[row]->firstActionId();
     case BubbleModel::DefaultActionId:
         return m_bubbles[row]->defaultActionId();
     case BubbleModel::ActionTexts:
@@ -228,8 +280,10 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
     mapRoleNames[BubbleModel::Title] = "title";
     mapRoleNames[BubbleModel::IconName] = "iconName";
     mapRoleNames[BubbleModel::Level] = "level";;
-    mapRoleNames[BubbleModel::HasAction] = "hasAction";
-    mapRoleNames[BubbleModel::DefaultActionText] = "defaultActionText";
+    mapRoleNames[BubbleModel::hasDefaultAction] = "hasDefaultAction";
+    mapRoleNames[BubbleModel::hasDisplayAction] = "hasDisplayAction";
+    mapRoleNames[BubbleModel::FirstActionText] = "firstActionText";
+    mapRoleNames[BubbleModel::FirstActionId] = "firstActionId";
     mapRoleNames[BubbleModel::DefaultActionId] = "defaultActionId";
     mapRoleNames[BubbleModel::ActionTexts] = "actionTexts";
     mapRoleNames[BubbleModel::ActionIds] = "actionIds";

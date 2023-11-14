@@ -69,6 +69,8 @@ bool NotificationPanel::init()
             item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
         } else if (i == 3) {
             item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+        } else if (i == 4) {
+            item->setParams("appName", i, {"op1", "mu1", "default", "mu2", "op3", "mu3"}, {}, 0, 3, {});
         }
 
         m_bubbles->push(item);
@@ -153,7 +155,9 @@ void NotificationPanel::actionInvoke(int bubbleIndex, const QString &actionId)
     m_bubbles->remove(bubbleIndex);
     QVariantMap selectedHints;
     selectedHints["actionId"] = actionId;
-    m_interproxy->handleBubbleEnd(5, bubble->id(), {}, selectedHints);
+    QVariantMap bubbleParams;
+    selectedHints["replaceId"] = bubble->m_replaceId;
+    m_interproxy->handleBubbleEnd(5, bubble->id(), bubbleParams, selectedHints);
 }
 
 }

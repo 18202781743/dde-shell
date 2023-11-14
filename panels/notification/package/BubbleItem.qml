@@ -24,46 +24,58 @@ Control {
         return 100
     }
     height: 50
-    contentItem: RowLayout {
-        D.QtIcon {
-            Layout.leftMargin: 20
-            sourceSize: Qt.size(32, 32)
-            name: bubble.iconName
-        }
+    contentItem: Item {
 
-        ColumnLayout {
-            Layout.leftMargin: 10
-            Layout.fillWidth: true
-            Text {
-                Layout.alignment: Qt.AlignLeft
-                text: bubble.title
-                Layout.fillWidth: true
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignLeft
-                text: bubble.text
-                Layout.fillWidth: true
+        MouseArea {
+            enabled: bubble.hasDefaultAction
+            anchors.fill: parent
+            onClicked: {
+                console.log(bubble.defaultActionId)
+                Applet.actionInvoke(bubble.index, bubble.defaultActionId)
             }
         }
+        RowLayout {
+            anchors.fill: parent
+            D.QtIcon {
+                Layout.leftMargin: 10
+                sourceSize: Qt.size(32, 32)
+                name: bubble.iconName
+            }
 
-        Loader {
-            Layout.alignment: Qt.AlignRight
-            active: bubble.hasAction
-            sourceComponent: BubbleAction {
-                bubble: control.bubble
-                onActionInvoked: function(actionId) {
-                    console.log(actionId, index)
-                    Applet.actionInvoke(bubble.index, actionId)
+            ColumnLayout {
+                Layout.leftMargin: 10
+                Layout.fillWidth: true
+                Text {
+                    Layout.alignment: Qt.AlignLeft
+                    text: bubble.title
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignLeft
+                    text: bubble.text
+                    Layout.fillWidth: true
                 }
             }
-        }
 
-        D.ActionButton {
-            icon.name: "window_close"
-            Layout.alignment: Qt.AlignRight
-            onClicked: {
-                Applet.bubbles.remove(bubble.index)
+            Loader {
+                Layout.alignment: Qt.AlignRight
+                active: bubble.hasDisplayAction
+                sourceComponent: BubbleAction {
+                    bubble: control.bubble
+                    onActionInvoked: function(actionId) {
+                        console.log(actionId, index)
+                        Applet.actionInvoke(bubble.index, actionId)
+                    }
+                }
+            }
+
+            D.ActionButton {
+                icon.name: "window_close"
+                Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    Applet.bubbles.remove(bubble.index)
+                }
             }
         }
     }
