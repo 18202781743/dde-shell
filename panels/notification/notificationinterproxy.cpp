@@ -34,14 +34,21 @@ NotificationInterProxy::NotificationInterProxy(QObject *parent)
     }
 }
 
-void NotificationInterProxy::replaceNotificationBubble(const QString &service)
+bool NotificationInterProxy::replaceNotificationBubble(bool replace)
 {
-    notificationInter().method("ReplaceBubble").arg(service).call();
+    auto reply = notificationInter().method("ReplaceBubble").arg(replace).call();
+    reply.waitForFinished();
+    return !reply.isError();
 }
 
-void NotificationInterProxy::handleBubbleEnd(int type, const QVariantMap &bubbleParams, const QVariantMap &selectedHints)
+void NotificationInterProxy::handleBubbleEnd(int type, int id)
 {
-    notificationInter().method("HandleBubbleEnd").arg(static_cast<uint>(type)).arg(bubbleParams).arg(selectedHints).call();
+    return handleBubbleEnd(type, id, {}, {});
+}
+
+void NotificationInterProxy::handleBubbleEnd(int type, int id, const QVariantMap &bubbleParams, const QVariantMap &selectedHints)
+{
+    notificationInter().method("HandleBubbleEnd").arg(static_cast<uint>(type)).arg(static_cast<uint>(id)).arg(bubbleParams).arg(selectedHints).call();
 }
 
 }

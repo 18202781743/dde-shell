@@ -9,6 +9,7 @@
 #include <QDBusReply>
 #include <QTimer>
 #include <QLoggingCategory>
+#include <QDateTime>
 
 #include <DDBusSender>
 
@@ -25,6 +26,7 @@ BubbleItem::BubbleItem(const QString &text, const QString &title, const QString 
     : m_text(text)
     , m_title(title)
     , m_iconName(iconName)
+    , m_ctime(QString::number(QDateTime::currentMSecsSinceEpoch()))
 {
 
 }
@@ -47,6 +49,11 @@ QString BubbleItem::iconName() const
 int BubbleItem::level() const
 {
     return m_level;
+}
+
+int BubbleItem::id() const
+{
+    return m_id;
 }
 
 void BubbleItem::setLevel(int newLevel)
@@ -75,7 +82,59 @@ void BubbleItem::setParams(const QString &appName, int id, const QStringList &ac
     }
 }
 
+QVariantMap BubbleItem::toMap() const
+{
+    QVariantMap res;
+    res["id"] = m_id;
+    res["replaceId"] = m_replaceId;
+    res["appName"] = m_appName;
+    res["appIcon"] = m_iconName;
+    res["summary"] = m_title;
+    res["body"] = m_text;
+    res["actions"] = m_actions;
+    res["hints"] = m_hints;
+    res["ctime"] = m_hints;
+    res["extraParams"] = m_extraParams;
+    return res;
+}
+
+QString BubbleItem::defaultActionText() const
+{
+    if (!hasAction())
+        return QString();
+    return m_actions[1];
+}
+
+QString BubbleItem::defaultActionId() const
+{
+    if (!hasAction())
+        return QString();
+    return m_actions[0];
+}
+
+QStringList BubbleItem::actionTexts() const
+{
+    QStringList res;
+    for (int i = 3; i < m_actions.count(); i += 2)
+        res << m_actions[i];
+    return res;
+}
+
+QStringList BubbleItem::actionIds() const
+{
+    QStringList res;
+    for (int i = 2; i < m_actions.count(); i += 2)
+        res << m_actions[i];
+    return res;
+}
+
+bool BubbleItem::hasAction() const
+{
+    return m_actions.count() >= 2;
+}
+
 BubbleModel::BubbleModel(QObject *parent)
+    : QAbstractListModel(parent)
 {
 
 }
@@ -146,6 +205,16 @@ QVariant BubbleModel::data(const QModelIndex &index, int role) const
         return m_bubbles[row]->iconName();
     case BubbleModel::Level:
         return m_bubbles[row]->level();
+    case BubbleModel::HasAction:
+        return m_bubbles[row]->hasAction();
+    case BubbleModel::DefaultActionText:
+        return m_bubbles[row]->defaultActionText();
+    case BubbleModel::DefaultActionId:
+        return m_bubbles[row]->defaultActionId();
+    case BubbleModel::ActionTexts:
+        return m_bubbles[row]->actionTexts();
+    case BubbleModel::ActionIds:
+        return m_bubbles[row]->actionIds();
     default:
         break;
     }
@@ -158,7 +227,12 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
     mapRoleNames[BubbleModel::Text] = "text";
     mapRoleNames[BubbleModel::Title] = "title";
     mapRoleNames[BubbleModel::IconName] = "iconName";
-    mapRoleNames[BubbleModel::Level] = "level";
+    mapRoleNames[BubbleModel::Level] = "level";;
+    mapRoleNames[BubbleModel::HasAction] = "hasAction";
+    mapRoleNames[BubbleModel::DefaultActionText] = "defaultActionText";
+    mapRoleNames[BubbleModel::DefaultActionId] = "defaultActionId";
+    mapRoleNames[BubbleModel::ActionTexts] = "actionTexts";
+    mapRoleNames[BubbleModel::ActionIds] = "actionIds";
     return mapRoleNames;
 }
 

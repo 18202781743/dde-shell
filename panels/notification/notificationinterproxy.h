@@ -17,9 +17,10 @@ class NotificationInterProxy : public QObject
 public:
     explicit NotificationInterProxy(QObject *parent = nullptr);
 
-    void replaceNotificationBubble(const QString &service);
+    bool replaceNotificationBubble(bool replace);
 
-    void handleBubbleEnd(int type, const QVariantMap &bubbleParams, const QVariantMap &selectedHints);
+    void handleBubbleEnd(int type, int id);
+    void handleBubbleEnd(int type, int id, const QVariantMap &bubbleParams, const QVariantMap &selectedHints);
 
 Q_SIGNALS:
     void ShowBubble(const QString &appName, uint replacesId,

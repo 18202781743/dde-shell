@@ -25,22 +25,32 @@ NotificationPanel::NotificationPanel(QObject *parent)
 {
 }
 
-void NotificationPanel::load()
+NotificationPanel::~NotificationPanel()
 {
-    DPanel::load();
+    if (m_interproxy) {
+        m_interproxy->replaceNotificationBubble(false);
+    }
 }
 
-void NotificationPanel::init()
+bool NotificationPanel::load()
+{
+    return DPanel::load();
+}
+
+bool NotificationPanel::init()
 {
     DPanel::init();
 
     m_interproxy = new NotificationInterProxy(this);
+    if (!m_interproxy->replaceNotificationBubble(true)) {
+        return false;
+    }
     QObject::connect(m_interproxy, &NotificationInterProxy::ShowBubble, this, &NotificationPanel::onShowBubble);
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(1000);
-    timer->setSingleShot(true);
-//    timer->start(1000);
+//    timer->setSingleShot(true);
+    timer->start(1000);
     connect(timer, &QTimer::timeout, this, [this, timer]() {
         if (m_bubbles->rowCount(QModelIndex()) >= 5) {
             timer->stop();
@@ -51,8 +61,19 @@ void NotificationPanel::init()
         auto item = new BubbleItem(QString("title") + QString::number(i),
                                    QString("text") + QString::number(i),
                                    "deepin-manual");
+        if (i == 0) {
+            item->setParams("appName", i, {"op1", "mu1"}, {}, 0, 3, {});
+        } else if (i == 1) {
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2"}, {}, 0, 3, {});
+        } else if (i == 2) {
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+        } else if (i == 3) {
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+        }
+
         m_bubbles->push(item);
     });
+    return true;
 }
 
 bool NotificationPanel::visible() const
@@ -95,6 +116,12 @@ void NotificationPanel::onBubbleTimeout()
         return;
 
     m_bubbles->remove(bubble);
+    m_interproxy->handleBubbleEnd(1, bubble->id());
+}
+
+void NotificationPanel::onActionInvoked()
+{
+
 }
 
 void NotificationPanel::showNotification()
@@ -115,6 +142,18 @@ D_APPLET_CLASS(NotificationPanel)
 BubbleModel *NotificationPanel::bubbles() const
 {
     return m_bubbles;
+}
+
+void NotificationPanel::actionInvoke(int bubbleIndex, const QString &actionId)
+{
+    auto bubble = m_bubbles->items().at(bubbleIndex);
+    if (!bubble)
+        return;
+
+    m_bubbles->remove(bubbleIndex);
+    QVariantMap selectedHints;
+    selectedHints["actionId"] = actionId;
+    m_interproxy->handleBubbleEnd(5, bubble->id(), {}, selectedHints);
 }
 
 }

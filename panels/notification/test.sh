@@ -37,3 +37,5 @@ sleep 3
 #notify-send 2 -a element
 #sleep 1
 #notify-send 3 -a element
+
+dbus-send --session --type=method_call --dest=org.deepin.dde.Notification1 /org/deepin/dde/Notification1 org.deepin.dde.Notification1.ReplaceBubble boolean:false

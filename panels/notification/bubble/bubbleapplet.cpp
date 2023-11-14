@@ -28,8 +28,9 @@ BubbleApplet::BubbleApplet(QObject *parent)
 
 }
 
-void BubbleApplet::init()
+bool BubbleApplet::init()
 {
+    return DApplet::init();
 }
 
 D_APPLET_CLASS(BubbleApplet)

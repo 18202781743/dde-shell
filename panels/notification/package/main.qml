@@ -25,11 +25,7 @@ Window {
         model: Applet.bubbles
         delegate: BubbleItem {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: model.text
-            title: model.title
-            iconName: model.iconName
-            level: model.level
-            index: model.index
+            bubble: model
         }
     }
 //    color: "transparent"

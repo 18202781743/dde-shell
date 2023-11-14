@@ -20,14 +20,16 @@ class NotificationPanel : public DPanel
     Q_CLASSINFO("D-Bus Interface", "org.deepin.notificationService")
 public:
     explicit NotificationPanel(QObject *parent = nullptr);
+    ~NotificationPanel();
 
-    virtual void load() override;
-    virtual void init() override;
+    virtual bool load() override;
+    virtual bool init() override;
 
     bool visible() const;
     BubbleModel *bubbles() const;
 
 public Q_SLOTS:
+    void actionInvoke(int bubbleIndex, const QString &actionId);
 
 Q_SIGNALS:
     void visibleChanged();
@@ -41,6 +43,7 @@ private Q_SLOTS:
                       const QVariantMap bubbleParams);
 
     void onBubbleTimeout();
+    void onActionInvoked();
 private:
     void setVisible(const bool visible);
     void showNotification();

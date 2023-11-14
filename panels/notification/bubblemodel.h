@@ -19,6 +19,7 @@ class BubbleItem : public QObject
     Q_PROPERTY(QString title READ title CONSTANT)
     Q_PROPERTY(QString iconName READ iconName CONSTANT)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
+    Q_PROPERTY(bool hasAction READ hasAction CONSTANT)
 public:
     explicit BubbleItem();
     explicit BubbleItem(const QString &text, const QString &title, const QString &iconName);
@@ -27,11 +28,20 @@ public:
     QString title() const;
     QString iconName() const;
     int level() const;
+    int id() const;
 
     void setLevel(int newLevel);
     void setParams(const QString &appName, int id, const QStringList &actions,
                    const QVariantMap hints, int replaceId, const int timeout,
                    const QVariantMap bubbleParams);
+
+    QVariantMap toMap() const;
+
+    bool hasAction() const;
+    QString defaultActionText() const;
+    QString defaultActionId() const;
+    QStringList actionTexts() const;
+    QStringList actionIds() const;
 
 Q_SIGNALS:
     void levelChanged();
@@ -45,6 +55,7 @@ public:
     QVariantMap m_hints;
     int m_replaceId;
     int m_timeout = 0;
+    QString m_ctime;
     QVariantMap m_extraParams;
 
 private:
@@ -62,7 +73,12 @@ public:
         Text = Qt::UserRole + 1,
         Title,
         IconName,
-        Level
+        Level,
+        HasAction,
+        DefaultActionText,
+        DefaultActionId,
+        ActionTexts,
+        ActionIds,
     } BubbleRule;
     enum {
         Timeout,

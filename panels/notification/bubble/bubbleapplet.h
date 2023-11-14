@@ -14,7 +14,7 @@ class BubbleApplet : public DApplet
     Q_OBJECT
   public:
     explicit BubbleApplet(QObject *parent = nullptr);
-    virtual void init() override;
+    virtual bool init() override;
 
 };
 
