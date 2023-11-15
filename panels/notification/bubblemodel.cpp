@@ -192,7 +192,11 @@ void BubbleModel::push(BubbleItem *item)
 //    if (m_bubbles.count() >= 5) {
 //        remove(m_bubbles.count() - 1);
 //    }
-
+    bool more = displayRowCount() >= BubbleMaxCount;
+    if (more) {
+        beginRemoveRows(QModelIndex(), BubbleMaxCount - 1, BubbleMaxCount - 1);
+        endRemoveRows();
+    }
     beginInsertRows(QModelIndex(), 0, 0);
     m_bubbles.prepend(item);
     endInsertRows();
@@ -218,14 +222,19 @@ QList<BubbleItem *> BubbleModel::items() const
 
 void BubbleModel::remove(int index)
 {
-    if (index < 0 || index >= m_bubbles.count())
+    if (index < 0 || index >= displayRowCount())
         return;
 
     beginRemoveRows(QModelIndex(), index, index);
     auto bubble = m_bubbles.takeAt(index);
     bubble->deleteLater();
     endRemoveRows();
-    updateLevel();
+
+    if (m_bubbles.count() >= BubbleMaxCount) {
+        beginInsertRows(QModelIndex(), displayRowCount() - 1, displayRowCount() - 1);
+        endInsertRows();
+        updateLevel();
+    }
 }
 
 void BubbleModel::remove(BubbleItem *bubble)
@@ -239,7 +248,7 @@ void BubbleModel::remove(BubbleItem *bubble)
 int BubbleModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return m_bubbles.count();
+    return displayRowCount();
 }
 
 QVariant BubbleModel::data(const QModelIndex &index, int role) const
@@ -257,6 +266,8 @@ QVariant BubbleModel::data(const QModelIndex &index, int role) const
         return m_bubbles[row]->iconName();
     case BubbleModel::Level:
         return m_bubbles[row]->level();
+    case BubbleModel::OverlayCount:
+        return overlayCount();
     case BubbleModel::hasDefaultAction:
         return m_bubbles[row]->hasDefaultAction();
     case BubbleModel::hasDisplayAction:
@@ -282,6 +293,7 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
     mapRoleNames[BubbleModel::Title] = "title";
     mapRoleNames[BubbleModel::IconName] = "iconName";
     mapRoleNames[BubbleModel::Level] = "level";
+    mapRoleNames[BubbleModel::OverlayCount] = "overlayCount";
     mapRoleNames[BubbleModel::hasDefaultAction] = "hasDefaultAction";
     mapRoleNames[BubbleModel::hasDisplayAction] = "hasDisplayAction";
     mapRoleNames[BubbleModel::FirstActionText] = "firstActionText";
@@ -291,16 +303,26 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
     return mapRoleNames;
 }
 
+int BubbleModel::displayRowCount() const
+{
+    return qMin(m_bubbles.count(), BubbleMaxCount);
+}
+
+int BubbleModel::overlayCount() const
+{
+    return qMin(m_bubbles.count() - displayRowCount(), OverlayMaxCount);
+}
+
 void BubbleModel::updateLevel()
 {
     if (m_bubbles.isEmpty())
         return;
 
-    for (int i = 0; i < m_bubbles.count(); i++) {
+    for (int i = 0; i < displayRowCount(); i++) {
         auto item = m_bubbles.at(i);
-        item->setLevel(i <= 1 ? 1 : i);
+        item->setLevel(i <= 1 ? 1 : 1 + overlayCount());
     }
-    Q_EMIT dataChanged(index(0, 0), index(m_bubbles.count() - 1, 0), {BubbleModel::Level});
+    Q_EMIT dataChanged(index(0), index(displayRowCount() - 1), {BubbleModel::Level});
 }
 
 }

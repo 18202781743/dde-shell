@@ -13,6 +13,15 @@ import org.deepin.dtk 1.0 as D
 D.Control {
     property var bubble
 
+    MouseArea {
+        anchors.fill: parent
+        enabled: bubble.hasDefaultAction
+
+        onClicked: {
+            console.log("default action", bubble.index)
+            Applet.defaultActionInvoke(bubble.index)
+        }
+    }
     contentItem: RowLayout {
 
         D.QtIcon {
@@ -25,10 +34,13 @@ D.Control {
             Layout.leftMargin: 10
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.maximumWidth: 400
             Text {
                 Layout.alignment: Qt.AlignLeft
+                elide: Text.ElideRight
                 text: bubble.title
                 Layout.fillWidth: true
+                maximumLineCount: 1
                 font: D.DTK.fontManager.t4
             }
 
@@ -36,6 +48,8 @@ D.Control {
                 Layout.alignment: Qt.AlignLeft
                 text: bubble.text
                 Layout.fillWidth: true
+                elide: Text.ElideRight
+                maximumLineCount: 1
             }
         }
 
@@ -58,14 +72,6 @@ D.Control {
                 console.log("close", bubble.index)
                 Applet.close(bubble.index)
             }
-        }
-    }
-    background: MouseArea {
-        enabled: bubble.hasDefaultAction
-
-        onClicked: {
-            console.log("default action", bubble.index)
-            Applet.defaultActionInvoke(bubble.index)
         }
     }
 }

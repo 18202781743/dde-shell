@@ -10,6 +10,10 @@ notify-send 4 -a dde-control-center -t 5000
 
 sleep 3
 
+notify-send "Memory Consumption (%):" "$(ps axch -o cmd:15,%mem --sort=-%mem | head -n 30)"
+
+notify-send "long body long body long body long body long body long body long body long body long body" "summary"
+
 #notify-send 1 -a dde-control-center
 #sleep 1
 #notify-send 2 -a dde-control-center

@@ -81,6 +81,7 @@ public:
         Title,
         IconName,
         Level,
+        OverlayCount,
         hasDefaultAction,
         hasDisplayAction,
         FirstActionText,
@@ -102,9 +103,14 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    int displayRowCount() const;
+    int overlayCount() const;
+
 private:
     void updateLevel();
     QList<BubbleItem *> m_bubbles;
+    const int BubbleMaxCount{3};
+    const int OverlayMaxCount{2};
 };
 
 }

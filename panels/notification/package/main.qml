@@ -15,10 +15,10 @@ Window {
     visible: Applet.visible
     width: 500
     height: Math.max(10, bubbleView.height)
-//    DLayerShellWindow.topMargin: 10
-//    DLayerShellWindow.leftMargin: 800
-//    DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
-//    DLayerShellWindow.anchors: DLayerShellWindow.AnchorTop
+    DLayerShellWindow.topMargin: 10
+    DLayerShellWindow.leftMargin: 800
+    DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
+    DLayerShellWindow.anchors: DLayerShellWindow.AnchorTop
 
     ListView  {
         id: bubbleView
@@ -32,11 +32,7 @@ Window {
         }
         delegate: Bubble {
             bubble: model
-            anchors.horizontalCenter: parent.horizontalCenter
-            Component.onCompleted: {
-                console.log("***********", bubbleView.count, bubble.index)
-            }
         }
     }
-//    color: "transparent"
+    color: "transparent"
 }

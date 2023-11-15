@@ -14,21 +14,20 @@ D.Control {
     id: control
     property var bubble
 
-    contentItem:  Loader {
-        sourceComponent: bubble.level <= 1 ? normalCom : overlayCom
-    }
-    Component {
-        id: normalCom
-        NormalBubble {
-            bubble: control.bubble
-        }
-    }
-    Component {
-        id: overlayCom
-        OverlayBubble {
-            bubble: control.bubble
-        }
+    contentItem: BubbleContent {
+        bubble: control.bubble
     }
 
     z: bubble.level <= 1 ? 0 : 1 - bubble.level
+
+    background: Rectangle {
+        implicitWidth: 500
+        implicitHeight: 20
+        radius: 18
+        opacity: {
+            if (bubble.level === 1)
+                return 0.8
+            return 1
+        }
+    }
 }
