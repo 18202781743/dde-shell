@@ -19,7 +19,7 @@ static DDBusSender notificationInter()
         .interface("org.deepin.dde.Notification1");
 }
 
-NotificationInterProxy::NotificationInterProxy(QObject *parent)
+NotificationProxy::NotificationProxy(QObject *parent)
     : QObject(parent)
 {
     auto bus = QDBusConnection::sessionBus();
@@ -34,19 +34,19 @@ NotificationInterProxy::NotificationInterProxy(QObject *parent)
     }
 }
 
-bool NotificationInterProxy::replaceNotificationBubble(bool replace)
+bool NotificationProxy::replaceNotificationBubble(bool replace)
 {
     auto reply = notificationInter().method("ReplaceBubble").arg(replace).call();
     reply.waitForFinished();
     return !reply.isError();
 }
 
-void NotificationInterProxy::handleBubbleEnd(int type, int id)
+void NotificationProxy::handleBubbleEnd(int type, int id)
 {
     return handleBubbleEnd(type, id, {}, {});
 }
 
-void NotificationInterProxy::handleBubbleEnd(int type, int id, const QVariantMap &bubbleParams, const QVariantMap &selectedHints)
+void NotificationProxy::handleBubbleEnd(int type, int id, const QVariantMap &bubbleParams, const QVariantMap &selectedHints)
 {
     notificationInter().method("HandleBubbleEnd").arg(static_cast<uint>(type)).arg(static_cast<uint>(id)).arg(bubbleParams).arg(selectedHints).call();
 }

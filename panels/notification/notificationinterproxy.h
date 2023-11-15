@@ -11,11 +11,20 @@
 DS_BEGIN_NAMESPACE
 namespace notification {
 
-class NotificationInterProxy : public QObject
+class NotificationProxy : public QObject
 {
     Q_OBJECT
 public:
-    explicit NotificationInterProxy(QObject *parent = nullptr);
+    explicit NotificationProxy(QObject *parent = nullptr);
+
+    enum ClosedReason {
+        Expired = 1,
+        Dismissed = 2,
+        Closed = 3,
+        Unknown = 4,
+        Action = 5,
+        NotProcessedYet,
+    };
 
     bool replaceNotificationBubble(bool replace);
 

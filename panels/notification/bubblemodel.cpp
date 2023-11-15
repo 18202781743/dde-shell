@@ -218,9 +218,12 @@ QList<BubbleItem *> BubbleModel::items() const
 
 void BubbleModel::remove(int index)
 {
+    if (index < 0 || index >= m_bubbles.count())
+        return;
+
     beginRemoveRows(QModelIndex(), index, index);
-    m_bubbles[index]->deleteLater();
-    m_bubbles.remove(index);
+    auto bubble = m_bubbles.takeAt(index);
+    bubble->deleteLater();
     endRemoveRows();
     updateLevel();
 }
@@ -235,6 +238,7 @@ void BubbleModel::remove(BubbleItem *bubble)
 
 int BubbleModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return m_bubbles.count();
 }
 
@@ -253,16 +257,14 @@ QVariant BubbleModel::data(const QModelIndex &index, int role) const
         return m_bubbles[row]->iconName();
     case BubbleModel::Level:
         return m_bubbles[row]->level();
-    case BubbleModel::hasDisplayAction:
-        return m_bubbles[row]->hasDisplayAction();
     case BubbleModel::hasDefaultAction:
         return m_bubbles[row]->hasDefaultAction();
+    case BubbleModel::hasDisplayAction:
+        return m_bubbles[row]->hasDisplayAction();
     case BubbleModel::FirstActionText:
         return m_bubbles[row]->firstActionText();
     case BubbleModel::FirstActionId:
         return m_bubbles[row]->firstActionId();
-    case BubbleModel::DefaultActionId:
-        return m_bubbles[row]->defaultActionId();
     case BubbleModel::ActionTexts:
         return m_bubbles[row]->actionTexts();
     case BubbleModel::ActionIds:
@@ -279,12 +281,11 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
     mapRoleNames[BubbleModel::Text] = "text";
     mapRoleNames[BubbleModel::Title] = "title";
     mapRoleNames[BubbleModel::IconName] = "iconName";
-    mapRoleNames[BubbleModel::Level] = "level";;
+    mapRoleNames[BubbleModel::Level] = "level";
     mapRoleNames[BubbleModel::hasDefaultAction] = "hasDefaultAction";
     mapRoleNames[BubbleModel::hasDisplayAction] = "hasDisplayAction";
     mapRoleNames[BubbleModel::FirstActionText] = "firstActionText";
     mapRoleNames[BubbleModel::FirstActionId] = "firstActionId";
-    mapRoleNames[BubbleModel::DefaultActionId] = "defaultActionId";
     mapRoleNames[BubbleModel::ActionTexts] = "actionTexts";
     mapRoleNames[BubbleModel::ActionIds] = "actionIds";
     return mapRoleNames;
@@ -292,6 +293,9 @@ QHash<int, QByteArray> BubbleModel::roleNames() const
 
 void BubbleModel::updateLevel()
 {
+    if (m_bubbles.isEmpty())
+        return;
+
     for (int i = 0; i < m_bubbles.count(); i++) {
         auto item = m_bubbles.at(i);
         item->setLevel(i <= 1 ? 1 : i);

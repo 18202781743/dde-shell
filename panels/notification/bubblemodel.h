@@ -89,10 +89,6 @@ public:
         ActionTexts,
         ActionIds,
     } BubbleRule;
-    enum {
-        Timeout,
-        User
-    } BubbleReleaseReason;
 
     explicit BubbleModel(QObject *parent = nullptr);
 

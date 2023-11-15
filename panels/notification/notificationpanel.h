@@ -29,12 +29,15 @@ public:
     BubbleModel *bubbles() const;
 
 public Q_SLOTS:
+    void defaultActionInvoke(int bubbleIndex);
     void actionInvoke(int bubbleIndex, const QString &actionId);
+    void close(int bubbleIndex);
 
 Q_SIGNALS:
     void visibleChanged();
 
 private Q_SLOTS:
+    void onBubbleCountChanged();
     void hideNotification();
     void onShowBubble(const QString &appName, uint replaceId,
                       const QString &appIcon, const QString &summary,
@@ -47,11 +50,12 @@ private Q_SLOTS:
 private:
     void setVisible(const bool visible);
     void showNotification();
+    BubbleItem *bubbleItem(int index);
 
 private:
     bool m_visible = false;
     BubbleModel *m_bubbles = nullptr;
-    NotificationInterProxy *m_interproxy = nullptr;
+    NotificationProxy *m_interproxy = nullptr;
 };
 
 }

@@ -41,23 +41,25 @@ bool NotificationPanel::init()
 {
     DPanel::init();
 
-    m_interproxy = new NotificationInterProxy(this);
+    m_interproxy = new NotificationProxy(this);
     if (!m_interproxy->replaceNotificationBubble(true)) {
         return false;
     }
-    QObject::connect(m_interproxy, &NotificationInterProxy::ShowBubble, this, &NotificationPanel::onShowBubble);
+    QObject::connect(m_interproxy, &NotificationProxy::ShowBubble, this, &NotificationPanel::onShowBubble);
+    QObject::connect(m_bubbles, &BubbleModel::rowsInserted, this, &NotificationPanel::onBubbleCountChanged);
+    QObject::connect(m_bubbles, &BubbleModel::rowsRemoved, this, &NotificationPanel::onBubbleCountChanged);
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(1000);
 //    timer->setSingleShot(true);
     timer->start(1000);
     connect(timer, &QTimer::timeout, this, [this, timer]() {
-        if (m_bubbles->rowCount(QModelIndex()) >= 5) {
+        if (m_bubbles->items().count() >= 5) {
             timer->stop();
             return;
             m_bubbles->clear();
         }
-        auto i = m_bubbles->rowCount(QModelIndex());
+        auto i = m_bubbles->items().count();
         auto item = new BubbleItem(QString("title") + QString::number(i),
                                    QString("text") + QString::number(i),
                                    "deepin-manual");
@@ -118,7 +120,7 @@ void NotificationPanel::onBubbleTimeout()
         return;
 
     m_bubbles->remove(bubble);
-    m_interproxy->handleBubbleEnd(1, bubble->id());
+    m_interproxy->handleBubbleEnd(NotificationProxy::Expired, bubble->id());
 }
 
 void NotificationPanel::onActionInvoked()
@@ -129,6 +131,13 @@ void NotificationPanel::onActionInvoked()
 void NotificationPanel::showNotification()
 {
     setVisible(true);
+}
+
+BubbleItem *NotificationPanel::bubbleItem(int index)
+{
+    if (index < 0 || index >= m_bubbles->items().count())
+        return nullptr;
+    return m_bubbles->items().at(index);
 }
 
 void NotificationPanel::setVisible(const bool visible)
@@ -146,18 +155,46 @@ BubbleModel *NotificationPanel::bubbles() const
     return m_bubbles;
 }
 
-void NotificationPanel::actionInvoke(int bubbleIndex, const QString &actionId)
+void NotificationPanel::defaultActionInvoke(int bubbleIndex)
 {
-    auto bubble = m_bubbles->items().at(bubbleIndex);
+    auto bubble = bubbleItem(bubbleIndex);
     if (!bubble)
         return;
 
+    QVariantMap selectedHints;
+    selectedHints["actionId"] = bubble->defaultActionId();
+    m_interproxy->handleBubbleEnd(NotificationProxy::Action, bubble->id(), bubble->toMap(), selectedHints);
     m_bubbles->remove(bubbleIndex);
+}
+
+void NotificationPanel::actionInvoke(int bubbleIndex, const QString &actionId)
+{
+    auto bubble = bubbleItem(bubbleIndex);
+    if (!bubble)
+        return;
+
     QVariantMap selectedHints;
     selectedHints["actionId"] = actionId;
     QVariantMap bubbleParams;
     selectedHints["replaceId"] = bubble->m_replaceId;
-    m_interproxy->handleBubbleEnd(5, bubble->id(), bubbleParams, selectedHints);
+    m_interproxy->handleBubbleEnd(NotificationProxy::Action, bubble->id(), bubbleParams, selectedHints);
+    m_bubbles->remove(bubbleIndex);
+}
+
+void NotificationPanel::close(int bubbleIndex)
+{
+    auto bubble = bubbleItem(bubbleIndex);
+    if (!bubble)
+        return;
+
+    m_interproxy->handleBubbleEnd(NotificationProxy::Dismissed, bubble->id(), {}, {});
+    m_bubbles->remove(bubbleIndex);
+}
+
+void NotificationPanel::onBubbleCountChanged()
+{
+    bool isEmpty = m_bubbles->items().isEmpty();
+    setVisible(!isEmpty);
 }
 
 }
