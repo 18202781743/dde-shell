@@ -27,8 +27,11 @@ NotificationPanel::NotificationPanel(QObject *parent)
 
 NotificationPanel::~NotificationPanel()
 {
-    if (m_interproxy) {
-        m_interproxy->replaceNotificationBubble(false);
+    if (m_interproxy && m_interproxy->isValid()) {
+        qCInfo(notificationLog) << "Cancle ReplaceBubble of osd's service.";
+        if (!m_interproxy->replaceNotificationBubble(false)) {
+            qCWarning(notificationLog) << "Failed to cancle ReplaceBubble of osd's service.";
+        }
     }
 }
 
@@ -42,9 +45,16 @@ bool NotificationPanel::init()
     DPanel::init();
 
     m_interproxy = new NotificationProxy(this);
+    if (!m_interproxy->isValid()) {
+        qCWarning(notificationLog) << "Failed to fetch notification service's handler.";
+        return false;
+    }
+
+    qCInfo(notificationLog) << "Intercept ReplaceBubble of osd's service.";
     if (!m_interproxy->replaceNotificationBubble(true)) {
         return false;
     }
+
     QObject::connect(m_interproxy, &NotificationProxy::ShowBubble, this, &NotificationPanel::onShowBubble);
     QObject::connect(m_bubbles, &BubbleModel::rowsInserted, this, &NotificationPanel::onBubbleCountChanged);
     QObject::connect(m_bubbles, &BubbleModel::rowsRemoved, this, &NotificationPanel::onBubbleCountChanged);
@@ -63,16 +73,20 @@ bool NotificationPanel::init()
         auto item = new BubbleItem(QString("title") + QString::number(i),
                                    QString("text") + QString::number(i),
                                    "deepin-manual");
+        QObject::connect(item, &BubbleItem::timeout, this, &NotificationPanel::onBubbleTimeout);
+
         if (i == 0) {
-            item->setParams("appName", i, {"op1", "mu1"}, {}, 0, 3, {});
+            item->setParams("appName", i, {"op1", "mu1"}, {}, 0, -1, {});
         } else if (i == 1) {
-            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2"}, {}, 0, 3, {});
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2"}, {}, 0, -1, {});
         } else if (i == 2) {
-            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 0, {});
         } else if (i == 3) {
-            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 0, {});
         } else if (i == 4) {
-            item->setParams("appName", i, {"op1", "mu1", "default", "mu2", "op3", "mu3"}, {}, 0, 3, {});
+            item->setParams("appName", i, {"op1", "mu1", "default", "mu2", "op3", "mu3"}, {}, 0, 0, {});
+        } else {
+            item->setParams("appName", i, {"op1", "mu1"}, {}, 0, -1, {});
         }
 
         m_bubbles->push(item);
@@ -83,12 +97,6 @@ bool NotificationPanel::init()
 bool NotificationPanel::visible() const
 {
     return m_visible;
-}
-
-
-void NotificationPanel::hideNotification()
-{
-    setVisible(false);
 }
 
 void NotificationPanel::onShowBubble(const QString &appName, uint replaceId,
@@ -103,6 +111,7 @@ void NotificationPanel::onShowBubble(const QString &appName, uint replaceId,
     auto bubble = new BubbleItem(summary,
                                body,
                                appIcon);
+
     QObject::connect(bubble, &BubbleItem::timeout, this, &NotificationPanel::onBubbleTimeout);
     bubble->setParams(appName, id, actions, hints, replaceId, expireTimeout, bubbleParams);
     for (auto item : m_bubbles->items()) {
@@ -147,8 +156,6 @@ void NotificationPanel::setVisible(const bool visible)
     m_visible = visible;
     Q_EMIT visibleChanged();
 }
-
-D_APPLET_CLASS(NotificationPanel)
 
 BubbleModel *NotificationPanel::bubbles() const
 {
@@ -206,6 +213,8 @@ void NotificationPanel::onBubbleCountChanged()
     bool isEmpty = m_bubbles->items().isEmpty();
     setVisible(!isEmpty);
 }
+
+D_APPLET_CLASS(NotificationPanel)
 
 }
 DS_END_NAMESPACE

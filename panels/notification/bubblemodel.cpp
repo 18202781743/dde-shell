@@ -73,10 +73,10 @@ void BubbleItem::setParams(const QString &appName, int id, const QStringList &ac
     m_replaceId = replaceId;
     m_timeout = timeout;
     m_extraParams = bubbleParams;
-    if (m_timeout > 0) {
+    if (m_timeout >= 0) {
         auto timer = new QTimer(this);
         timer->setSingleShot(true);
-        timer->setInterval(m_timeout);
+        timer->setInterval(m_timeout == 0 ? TimeOutInterval : m_timeout);
         QObject::connect(timer, &QTimer::timeout, this, &BubbleItem::timeout);
         timer->start();
     }
@@ -187,18 +187,15 @@ BubbleModel::BubbleModel(QObject *parent)
 
 }
 
-void BubbleModel::push(BubbleItem *item)
+void BubbleModel::push(BubbleItem *bubble)
 {
-//    if (m_bubbles.count() >= 5) {
-//        remove(m_bubbles.count() - 1);
-//    }
     bool more = displayRowCount() >= BubbleMaxCount;
     if (more) {
         beginRemoveRows(QModelIndex(), BubbleMaxCount - 1, BubbleMaxCount - 1);
         endRemoveRows();
     }
     beginInsertRows(QModelIndex(), 0, 0);
-    m_bubbles.prepend(item);
+    m_bubbles.prepend(bubble);
     endInsertRows();
 
     updateLevel();

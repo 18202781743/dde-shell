@@ -26,8 +26,9 @@ public:
         NotProcessedYet,
     };
 
-    bool replaceNotificationBubble(bool replace);
+    bool isValid() const;
 
+    bool replaceNotificationBubble(bool replace);
     void handleBubbleEnd(int type, int id);
     void handleBubbleEnd(int type, int id, const QVariantMap &bubbleParams, const QVariantMap &selectedHints);
 
@@ -37,6 +38,9 @@ Q_SIGNALS:
                     const QString &body, const QStringList &actions,
                     const QVariantMap hints, int expireTimeout,
                     const QVariantMap bubbleParams);
+
+private:
+    bool m_valid = false;
 };
 
 }

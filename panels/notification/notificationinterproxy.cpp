@@ -28,10 +28,15 @@ NotificationProxy::NotificationProxy(QObject *parent)
                 "org.deepin.dde.Notification1",
                 "ShowBubble",
                 this, SLOT(ShowBubble(const QString &, uint, const QString &, const QString &, const QString &, const QStringList &, const QVariantMap &, int, const QVariantMap &)));
-
-    if (!res) {
+    m_valid = res;
+    if (!isValid()) {
         qWarning() << "Failed to connect Notification's ShowBubble signal" << bus.lastError();
     }
+}
+
+bool NotificationProxy::isValid() const
+{
+    return m_valid;
 }
 
 bool NotificationProxy::replaceNotificationBubble(bool replace)

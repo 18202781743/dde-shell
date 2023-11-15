@@ -17,7 +17,6 @@ class NotificationPanel : public DPanel
     Q_OBJECT
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(BubbleModel *bubbles READ bubbles CONSTANT FINAL)
-    Q_CLASSINFO("D-Bus Interface", "org.deepin.notificationService")
 public:
     explicit NotificationPanel(QObject *parent = nullptr);
     ~NotificationPanel();
@@ -39,7 +38,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onBubbleCountChanged();
-    void hideNotification();
     void onShowBubble(const QString &appName, uint replaceId,
                       const QString &appIcon, const QString &summary,
                       const QString &body, const QStringList &actions,

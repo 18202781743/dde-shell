@@ -70,6 +70,7 @@ private:
     QString m_title;
     QString m_iconName;
     int m_level = 0;
+    const int TimeOutInterval{5000};
 };
 
 class BubbleModel : public QAbstractListModel
@@ -93,7 +94,7 @@ public:
 
     explicit BubbleModel(QObject *parent = nullptr);
 
-    void push(BubbleItem *item);
+    void push(BubbleItem *bubble);
     void clear();
     QList<BubbleItem *> items() const;
     Q_INVOKABLE void remove(int index);
