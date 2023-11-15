@@ -15,11 +15,24 @@ D.Control {
 
     MouseArea {
         anchors.fill: parent
-        enabled: bubble.hasDefaultAction
 
         onClicked: {
+            if (!bubble.hasDefaultAction)
+                return
+
             console.log("default action", bubble.index)
             Applet.defaultActionInvoke(bubble.index)
+        }
+        property bool longPressed
+        onPressAndHold: {
+            longPressed = true
+        }
+        onPositionChanged: {
+            if (longPressed) {
+                longPressed = false
+                console.log("delay process", bubble.index)
+                Applet.delayProcess(bubble.index)
+            }
         }
     }
     contentItem: RowLayout {

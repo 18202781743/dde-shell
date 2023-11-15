@@ -26,6 +26,7 @@ Window {
         height: contentHeight
         spacing: 10
         model: Applet.bubbles
+        interactive: false
 
         add: Transition {
             NumberAnimation { properties: "y"; from: -100; duration: 500 }

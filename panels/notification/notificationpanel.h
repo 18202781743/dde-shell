@@ -32,6 +32,7 @@ public Q_SLOTS:
     void defaultActionInvoke(int bubbleIndex);
     void actionInvoke(int bubbleIndex, const QString &actionId);
     void close(int bubbleIndex);
+    void delayProcess(int bubbleIndex);
 
 Q_SIGNALS:
     void visibleChanged();

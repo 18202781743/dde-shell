@@ -191,6 +191,16 @@ void NotificationPanel::close(int bubbleIndex)
     m_bubbles->remove(bubbleIndex);
 }
 
+void NotificationPanel::delayProcess(int bubbleIndex)
+{
+    auto bubble = bubbleItem(bubbleIndex);
+    if (!bubble)
+        return;
+
+    m_interproxy->handleBubbleEnd(NotificationProxy::NotProcessedYet, bubble->id(), bubble->toMap(), {});
+    m_bubbles->remove(bubbleIndex);
+}
+
 void NotificationPanel::onBubbleCountChanged()
 {
     bool isEmpty = m_bubbles->items().isEmpty();
