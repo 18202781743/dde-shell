@@ -13,7 +13,7 @@ import org.deepin.dtk 1.0 as D
 Window {
     id: root
     visible: Applet.visible
-    width: 500
+    width: 600
     height: Math.max(10, bubbleView.height)
     DLayerShellWindow.topMargin: 10
     DLayerShellWindow.leftMargin: 800

@@ -27,6 +27,7 @@ public:
     QString text() const;
     QString title() const;
     QString iconName() const;
+    QString appName() const;
     int level() const;
     int id() const;
 

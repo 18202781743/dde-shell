@@ -27,7 +27,7 @@ D.Control {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: bubbleContent.width - (index + 1) * 40
                 Layout.preferredHeight: 50
-                radius: 8
+                radius: 18
                 opacity: 0.8
                 z: 1 - bubble.level - (index + 1)
             }
@@ -37,7 +37,7 @@ D.Control {
     z: bubble.level <= 1 ? 0 : 1 - bubble.level
 
     background: Rectangle {
-        implicitWidth: 500
+        implicitWidth: 600
         radius: 18
         opacity: 1
         color: "transparent"

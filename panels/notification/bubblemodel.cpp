@@ -10,12 +10,146 @@
 #include <QTimer>
 #include <QLoggingCategory>
 #include <QDateTime>
+#include <QImage>
+#include <QIcon>
+#include <QTemporaryFile>
 
 #include <DDBusSender>
+#include <QUrl>
 
-namespace ds {
-//DS_BEGIN_NAMESPACE
+DS_BEGIN_NAMESPACE
 namespace notification {
+
+static inline void copyLineRGB32(QRgb *dst, const char *src, int width)
+{
+    const char *end = src + width * 3;
+    for (; src != end; ++dst, src += 3) {
+        *dst = qRgb(src[0], src[1], src[2]);
+    }
+}
+
+static inline void copyLineARGB32(QRgb *dst, const char *src, int width)
+{
+    const char *end = src + width * 4;
+    for (; src != end; ++dst, src += 4) {
+        *dst = qRgba(src[0], src[1], src[2], src[3]);
+    }
+}
+
+static QImage decodeImageFromDBusArgument(const QDBusArgument &arg)
+{
+    int width, height, rowStride, hasAlpha, bitsPerSample, channels;
+    QByteArray pixels;
+    char *ptr;
+    char *end;
+
+    arg.beginStructure();
+    arg >> width >> height >> rowStride >> hasAlpha >> bitsPerSample >> channels >> pixels;
+    arg.endStructure();
+    //qDebug() << width << height << rowStride << hasAlpha << bitsPerSample << channels;
+
+#define SANITY_CHECK(condition) \
+    if (!(condition)) { \
+            qWarning() << "Sanity check failed on" << #condition; \
+            return QImage(); \
+    }
+
+    SANITY_CHECK(width > 0);
+    SANITY_CHECK(width < 2048);
+    SANITY_CHECK(height > 0);
+    SANITY_CHECK(height < 2048);
+    SANITY_CHECK(rowStride > 0);
+
+#undef SANITY_CHECK
+
+    QImage::Format format = QImage::Format_Invalid;
+    void (*fcn)(QRgb *, const char *, int) = nullptr;
+    if (bitsPerSample == 8) {
+        if (channels == 4) {
+            format = QImage::Format_ARGB32;
+            fcn = copyLineARGB32;
+        } else if (channels == 3) {
+            format = QImage::Format_RGB32;
+            fcn = copyLineRGB32;
+        }
+    }
+    if (format == QImage::Format_Invalid) {
+        qWarning() << "Unsupported image format (hasAlpha:" << hasAlpha << "bitsPerSample:" << bitsPerSample << "channels:" << channels << ")";
+        return QImage();
+    }
+
+    QImage image(width, height, format);
+    ptr = pixels.data();
+    end = ptr + pixels.length();
+    for (int y = 0; y < height; ++y, ptr += rowStride) {
+        if (ptr + channels * width > end) {
+            qWarning() << "Image data is incomplete. y:" << y << "height:" << height;
+            break;
+        }
+        fcn((QRgb *)image.scanLine(y), ptr, width);
+    }
+
+    return image;
+}
+
+static QImage decodeImageFromBase64(const QString &arg)
+{
+    if (arg.startsWith("data:image/")) {
+        // iconPath is a string representing an inline image.
+        QStringList strs = arg.split("base64,");
+        if (strs.length() == 2) {
+            QByteArray data = QByteArray::fromBase64(strs.at(1).toLatin1());
+            return QImage::fromData(data);
+        }
+    }
+    return QImage();
+}
+
+static QIcon decodeIconFromPath(const QString &arg, const QString &fallback)
+{
+    const QUrl url(arg);
+    const auto iconUrl = url.isLocalFile() ? url.toLocalFile() : url.url();
+    QIcon icon = QIcon::fromTheme(iconUrl);
+    if (!icon.isNull()) {
+        return icon;
+    }
+    return QIcon::fromTheme(fallback, QIcon::fromTheme("application-x-desktop"));
+}
+
+static QString imagePathOfNotification(const QVariantMap &hints, const QString &appIcon, const QString &appName)
+{
+    static const QStringList HintsOrder {
+        "desktop-entry",
+        "image-data",
+        "image-path",
+        "image_path",
+        "icon_data"
+    };
+
+    QImage img;
+    QString imageData(appIcon);
+    for (auto hint : HintsOrder) {
+        const auto &source = hints[hint];
+        if (source.isNull())
+            continue;
+        if (source.canConvert<QDBusArgument>()) {
+            img = decodeImageFromDBusArgument(source.value<QDBusArgument>());
+            if (!img.isNull())
+                break;
+        }
+        imageData = source.toString();
+    }
+    if (img.isNull()) {
+        img = decodeImageFromBase64(imageData);
+    }
+    if (!img.isNull()) {
+        QTemporaryFile file("notification_icon");
+        img.save(file.fileName());
+        return file.fileName();
+    }
+    QIcon icon = decodeIconFromPath(imageData, appName);
+    return icon.name();
+}
 
 BubbleItem::BubbleItem()
 {
@@ -43,7 +177,12 @@ QString BubbleItem::title() const
 
 QString BubbleItem::iconName() const
 {
-    return m_iconName;
+    return imagePathOfNotification(m_hints, m_iconName, m_appName);
+}
+
+QString BubbleItem::appName() const
+{
+    return m_appName;
 }
 
 int BubbleItem::level() const

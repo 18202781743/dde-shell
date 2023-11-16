@@ -21,8 +21,7 @@ D.Control {
     z: bubble.level <= 1 ? 0 : 1 - bubble.level
 
     background: Rectangle {
-        implicitWidth: 500
-        implicitHeight: 20
+        implicitWidth: 600
         radius: 18
         opacity: {
             if (bubble.level === 1)

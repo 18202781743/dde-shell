@@ -39,7 +39,7 @@ D.Control {
 
         D.QtIcon {
             Layout.leftMargin: 10
-            sourceSize: Qt.size(32, 32)
+            sourceSize: Qt.size(40, 40)
             name: bubble.iconName
         }
 
@@ -63,6 +63,7 @@ D.Control {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 maximumLineCount: 1
+                textFormat: Text.PlainText
             }
         }
 

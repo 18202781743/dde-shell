@@ -73,12 +73,12 @@ bool NotificationPanel::init()
         auto item = new BubbleItem(QString("title") + QString::number(i),
                                    QString("text") + QString::number(i),
                                    "deepin-manual");
-        QObject::connect(item, &BubbleItem::timeout, this, &NotificationPanel::onBubbleTimeout);
+//        QObject::connect(item, &BubbleItem::timeout, this, &NotificationPanel::onBubbleTimeout);
 
         if (i == 0) {
-            item->setParams("appName", i, {"op1", "mu1"}, {}, 0, -1, {});
+            item->setParams("dde-control-center", i, {"op1", "mu1"}, {}, 0, -1, {});
         } else if (i == 1) {
-            item->setParams("appName", i, {"op1", "mu1", "op2", "mu2"}, {}, 0, -1, {});
+            item->setParams("dde-control-center", i, {"op1", "mu1", "op2", "mu2"}, {}, 0, -1, {});
         } else if (i == 2) {
             item->setParams("appName", i, {"op1", "mu1", "op2", "mu2", "op3", "mu3"}, {}, 0, 0, {});
         } else if (i == 3) {
