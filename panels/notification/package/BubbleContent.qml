@@ -44,25 +44,30 @@ D.Control {
         }
 
         ColumnLayout {
-            Layout.leftMargin: 10
+            spacing: 0
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.maximumWidth: 400
+            Layout.maximumWidth: 500
             Text {
+                visible: bubble.title !== ""
                 Layout.alignment: Qt.AlignLeft
                 elide: Text.ElideRight
                 text: bubble.title
                 Layout.fillWidth: true
                 maximumLineCount: 1
-                font: D.DTK.fontManager.t4
+                font: D.DTK.fontManager.t6
             }
 
             Text {
+                visible: bubble.text !== ""
                 Layout.alignment: Qt.AlignLeft
                 text: bubble.text
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 maximumLineCount: 1
+                font: D.DTK.fontManager.t7
                 textFormat: Text.PlainText
             }
         }

@@ -128,8 +128,9 @@ void NotificationPanel::onBubbleTimeout()
     if (!bubble)
         return;
 
-    m_bubbles->remove(bubble);
     m_interproxy->handleBubbleEnd(NotificationProxy::Expired, bubble->id());
+    m_interproxy->handleBubbleEnd(NotificationProxy::NotProcessedYet, bubble->id(), bubble->toMap(), {});
+    m_bubbles->remove(bubble);
 }
 
 void NotificationPanel::onActionInvoked()
@@ -204,6 +205,7 @@ void NotificationPanel::delayProcess(int bubbleIndex)
     if (!bubble)
         return;
 
+    m_interproxy->handleBubbleEnd(NotificationProxy::Dismissed, bubble->id(), {}, {});
     m_interproxy->handleBubbleEnd(NotificationProxy::NotProcessedYet, bubble->id(), bubble->toMap(), {});
     m_bubbles->remove(bubbleIndex);
 }

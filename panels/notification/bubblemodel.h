@@ -55,6 +55,7 @@ private:
     int defaultActionIdIndex() const;
     int defaultActionTextIndex() const;
     QStringList displayActions() const;
+    QString displayText() const;
 
 public:
     QString m_appName;

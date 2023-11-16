@@ -167,7 +167,7 @@ BubbleItem::BubbleItem(const QString &text, const QString &title, const QString 
 
 QString BubbleItem::text() const
 {
-    return m_text;
+    return displayText();
 }
 
 QString BubbleItem::title() const
@@ -232,7 +232,7 @@ QVariantMap BubbleItem::toMap() const
     res["body"] = m_text;
     res["actions"] = m_actions;
     res["hints"] = m_hints;
-    res["ctime"] = m_hints;
+    res["ctime"] = m_ctime;
     res["extraParams"] = m_extraParams;
     return res;
 }
@@ -307,6 +307,11 @@ QStringList BubbleItem::displayActions() const
         return tmp;
     }
     return m_actions;
+}
+
+QString BubbleItem::displayText() const
+{
+    return m_extraParams["isShowPreview"].toBool() ? m_text : tr("1 new message");
 }
 
 bool BubbleItem::hasDisplayAction() const
