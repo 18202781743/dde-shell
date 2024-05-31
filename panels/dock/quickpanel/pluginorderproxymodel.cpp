@@ -27,6 +27,29 @@ QColor PluginOrderProxyModel::getSurfaceItem(const QString &pluginName)
     return surfaceValue(pluginName, "color").value<QColor>();
 }
 
+QVariant PluginOrderProxyModel::data(const QModelIndex &index, int role) const
+{
+    switch (role) {
+    case Qt::UserRole + 1:
+        return surfaceValue(index, "itemKey");
+    case Qt::UserRole + 2:
+        return surfaceValue(index, "surfaceType");
+    case Qt::UserRole + 3:
+        return QVariant::fromValue(surfaceObject(index));
+    }
+    return {};
+}
+
+QHash<int, QByteArray> PluginOrderProxyModel::roleNames() const
+{
+    const QHash<int, QByteArray> roles {
+        {Qt::UserRole + 1, "pluginName"},
+        {Qt::UserRole + 2, "surfaceType"},
+        {Qt::UserRole + 3, "surface"},
+    };
+    return roles;
+}
+
 bool PluginOrderProxyModel::lessThan(const QModelIndex &sourceLeft, const QModelIndex &sourceRight) const
 {
     auto leftOrder = pluginOrder(sourceLeft);
@@ -41,6 +64,12 @@ bool PluginOrderProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     if (!index.isValid())
         return false;
     const auto &name = surfaceName(index);
+    qDebug() << "******8"
+             << surfaceValue(index, "itemKey")
+             << surfaceValue(index, "pluginId")
+             << surfaceValue(index, "contextMenu")
+             << surfaceValue(index, "pluginFlags")
+             << surfaceValue(index, "surfaceType");
     return !m_hideInPanelPlugins.contains(name);
 }
 
@@ -76,7 +105,7 @@ int PluginOrderProxyModel::pluginOrder(const QModelIndex &index) const
 
 int PluginOrderProxyModel::surfaceType(const QModelIndex &index) const
 {
-    return surfaceValue(index, "type").toInt();
+    return surfaceValue(index, "surfaceType").toInt();
 }
 
 int PluginOrderProxyModel::surfaceOrder(const QModelIndex &index) const
@@ -91,14 +120,13 @@ QColor PluginOrderProxyModel::surfaceColor(const QModelIndex &index)
 
 QString PluginOrderProxyModel::surfaceName(const QModelIndex &index) const
 {
-    return surfaceValue(index, "pluginName").toString();
+    return surfaceValue(index, "itemKey").toString();
 }
 
 QVariant PluginOrderProxyModel::surfaceValue(const QModelIndex &index, const QByteArray &roleName) const
 {
-    const auto role = roleByName(roleName);
-    if (role >= 0)
-        return surfaceModel()->data(index, role);
+    if (auto modelData = surfaceObject(index))
+        return modelData->property(roleName);
 
     return {};
 }
@@ -113,6 +141,15 @@ QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName, const QB
             return surfaceValue(index, roleName);
     }
     return {};
+}
+
+QObject *PluginOrderProxyModel::surfaceObject(const QModelIndex &index) const
+{
+    const auto modelDataRole = roleByName("shellSurface");
+    if (modelDataRole >= 0)
+        return surfaceModel()->data(index, modelDataRole).value<QObject *>();
+
+    return nullptr;
 }
 
 int PluginOrderProxyModel::roleByName(const QByteArray &roleName) const

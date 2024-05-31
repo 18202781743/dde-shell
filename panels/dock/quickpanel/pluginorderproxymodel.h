@@ -20,6 +20,9 @@ public:
     Q_INVOKABLE QString getTitle(const QString &pluginName);
     Q_INVOKABLE QColor getSurfaceItem(const QString &pluginName);
 
+    QVariant data(const QModelIndex &index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
+
 protected:
     bool lessThan(const QModelIndex &sourceLeft, const QModelIndex &sourceRight) const override;
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
@@ -33,6 +36,7 @@ private:
     QString surfaceName(const QModelIndex &index) const;
     QVariant surfaceValue(const QModelIndex &index, const QByteArray &roleName) const;
     QVariant surfaceValue(const QString &pluginName, const QByteArray &roleName) const;
+    QObject *surfaceObject(const QModelIndex &index) const;
     int roleByName(const QByteArray &roleName) const;
     QAbstractListModel *surfaceModel() const;
 

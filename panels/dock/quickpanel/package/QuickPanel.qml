@@ -52,9 +52,10 @@ Item {
             }
             height: 60
             color: model.color
+            shellSurface: model.surface
 
             Text {
-                text: model.order + model.pluginName
+                text: "" + model.pluginName
                 anchors.centerIn: parent
                 width: parent.width
                 elide: Text.ElideRight
