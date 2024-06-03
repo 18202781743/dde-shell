@@ -20,44 +20,33 @@ AppletItem {
     implicitHeight: {
         return quickpanel.childrenRect.height
     }
-    // implicitWidth: {
-    //     return panelView.implicitWidth
-    // }
-    // implicitHeight: {
-    //     return panelView.implicitHeight
-    // }
+
+    property alias popup: popup
+
+    PanelPopup {
+        id: popup
+        width: popupContent.width
+        height: popupContent.height
+
+        property int defaultX: popup.x
+        property int defaultY: popup.y
+
+        onHeightChanged: {
+            popup.y = popup.defaultY - popup.height
+        }
+
+        onWidthChanged: {
+            popup.x = popup.defaultX - popup.width / 2
+        }
+
+        QuickPanel {
+            id: popupContent
+            model: quickpanelModel
+        }
+    }
 
     QuickPanelModel {
         id: quickpanelModel
     }
 
-    StackView {
-        id: panelView
-        anchors.fill: parent
-    }
-
-    QuickPanel {
-        id: quickpanel
-        model: quickpanelModel
-        onRequestShowSubPlugin: function (plugin) {
-            // StackView to manage QuickPanel
-            if (panelView.empty)
-                panelView.push(quickpanel)
-
-            var item = panelView.push(subPluginPageLoader,
-                                      {
-                                          pluginKey: plugin,
-                                          model: quickpanelModel
-                                      },
-                                      StackView.PushTransition)
-            item.requestBack.connect(function () {
-                panelView.pop()
-            })
-        }
-    }
-
-    Component {
-        id: subPluginPageLoader
-        SubPluginPage { }
-    }
 }
