@@ -12,7 +12,7 @@ import org.deepin.ds.dock 1.0
 
 Item {
 
-    required property QuickPanelItem dragItem
+    required property Item dragItem
 
     Component.onCompleted: {
         dragItem.Drag.keys = [
@@ -42,7 +42,7 @@ Item {
         id: dragHandler
         // yAxis.enabled: true
         // yAxis.maximum: 100
-        dragThreshold: 1
+        // dragThreshold: 1
         onActiveChanged: {
             if (active) {
                 dragItem.grabToImage(function(result) {

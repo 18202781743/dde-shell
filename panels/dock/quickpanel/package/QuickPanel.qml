@@ -46,33 +46,17 @@ Item {
             width: {
                 if (model.type === 4)
                     return 310
-                if (model.type === 2)
+                // if (model.type === 2)
                     return 150
                 return 70
             }
             height: 60
-            color: model.color
             shellSurface: model.surface
 
-            Text {
-                text: "" + model.pluginName
-                anchors.centerIn: parent
-                width: parent.width
-                elide: Text.ElideRight
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            TapHandler {
-                id: tapHandler
-                enabled: model.type === 2
-                gesturePolicy: TapHandler.ReleaseWithinBounds
-                acceptedButtons: Qt.LeftButton
-                onTapped: requestShowSubPlugin(model.pluginName)
-            }
-
-            DragItem {
-                anchors.fill: parent
-                dragItem: quickpanelItem
+            // clickedEnabled: model.type === 2
+            onClicked: {
+                console.log("request show subplugin:", model.pluginName)
+                requestShowSubPlugin(model.pluginName)
             }
         }
     }

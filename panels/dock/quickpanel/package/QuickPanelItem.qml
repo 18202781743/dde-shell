@@ -12,22 +12,35 @@ import org.deepin.dtk 1.0
 
 Control {
     id: root
-    property alias color: view.color
-    property alias shellSurface: surface.shellSurface
+    property alias shellSurface: surfaceLayer.shellSurface
+    property alias clickedEnabled: clickedLayer.enabled
+    signal clicked()
 
-    Rectangle {
-        id: view
-        anchors.fill: parent
-
-        color: "red"
-        radius: 18
-        opacity: 0.3
+    TapHandler {
+        id: clickedLayer
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+        acceptedButtons: Qt.LeftButton
+        onTapped: {
+            root.clicked()
+        }
     }
-    Item {
+
+    DragItem {
+        id: dragLayer
         anchors.fill: parent
-        ShellSurfaceItem {
-            id: surface
-            anchors.centerIn: parent
+        dragItem: root
+    }
+
+    ShellSurfaceItem {
+        id: surfaceLayer
+        width: 100
+        height: parent.height
+        anchors.centerIn: parent
+
+        Rectangle {
+            anchors.fill: parent
+            opacity: 0.3
+            color: "gray"
         }
     }
 

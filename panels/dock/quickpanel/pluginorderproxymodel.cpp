@@ -22,9 +22,9 @@ QString PluginOrderProxyModel::getTitle(const QString &pluginName)
     return surfaceValue(pluginName, "title").toString();
 }
 
-QColor PluginOrderProxyModel::getSurfaceItem(const QString &pluginName)
+QObject *PluginOrderProxyModel::getSurfaceItem(const QString &pluginName)
 {
-    return surfaceValue(pluginName, "color").value<QColor>();
+    return surfaceValue(pluginName).value<QObject *>();
 }
 
 QVariant PluginOrderProxyModel::data(const QModelIndex &index, int role) const
@@ -137,10 +137,18 @@ QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName, const QB
     for (int i = 0; i < targetModel->rowCount(); i++) {
         const auto index = targetModel->index(i, 0);
         const auto name = surfaceName(index);
-        if (name == pluginName)
+        if (name == pluginName) {
+            if (roleName.isEmpty())
+                return QVariant::fromValue(surfaceObject(index));
             return surfaceValue(index, roleName);
+        }
     }
     return {};
+}
+
+QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName) const
+{
+    return surfaceValue(pluginName, {});
 }
 
 QObject *PluginOrderProxyModel::surfaceObject(const QModelIndex &index) const

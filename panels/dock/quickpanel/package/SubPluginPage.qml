@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtWayland.Compositor
 
 import org.deepin.ds 1.0
 import org.deepin.dtk 1.0
@@ -35,6 +36,7 @@ Item {
                 icon.height: 16
                 Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                 onClicked: {
+                    console.log("request back:", pluginKey)
                     requestBack()
                 }
             }
@@ -54,10 +56,21 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            Rectangle {
+            Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                color: model.getSurfaceItem(pluginKey)
+
+                ShellSurfaceItem {
+                    id: surface
+                    shellSurface: model.getSurfaceItem(pluginKey)
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "red"
+                        opacity: 0.3
+                    }
+                }
             }
         }
     }

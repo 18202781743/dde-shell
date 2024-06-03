@@ -11,7 +11,7 @@ import org.deepin.ds.dock.quickpanel 1.0
 PluginOrderProxyModel {
     id: root
 
-    sourceModel: DockCompositor.trayPluginSurfaces
+    sourceModel: DockCompositor.quickPluginSurfaces
     // sourceModel: ListModel {
     //     ListElement {
     //         order: 2
