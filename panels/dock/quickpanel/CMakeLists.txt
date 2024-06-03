@@ -10,8 +10,8 @@ qt_add_qml_module(dock-quickpanel
     SOURCES
         quickpanel.cpp
         quickpanel.h
-        pluginorderproxymodel.cpp
-        pluginorderproxymodel.h
+        quickpanelproxymodel.cpp
+        quickpanelproxymodel.h
     OUTPUT_DIRECTORY
         "${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/quickpanel"
 )

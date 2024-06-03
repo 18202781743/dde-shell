@@ -6,16 +6,15 @@
 
 #include <QtQml/qqml.h>
 #include <QSortFilterProxyModel>
-#include <QColor>
 
 namespace dock {
 
-class PluginOrderProxyModel : public QSortFilterProxyModel
+class QuickPanelProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(PluginOrderProxyModel)
+    QML_NAMED_ELEMENT(QuickPanelProxyModel)
 public:
-    explicit PluginOrderProxyModel(QObject *parent = nullptr);
+    explicit QuickPanelProxyModel(QObject *parent = nullptr);
 
     Q_INVOKABLE QString getTitle(const QString &pluginName);
     Q_INVOKABLE QObject *getSurfaceItem(const QString &pluginName);
@@ -32,7 +31,6 @@ private:
     int pluginOrder(const QModelIndex &index) const;
     int surfaceType(const QModelIndex &index) const;
     int surfaceOrder(const QModelIndex &index) const;
-    QColor surfaceColor(const QModelIndex &index);
     QString surfaceName(const QModelIndex &index) const;
     QVariant surfaceValue(const QModelIndex &index, const QByteArray &roleName) const;
     QVariant surfaceValue(const QString &pluginName, const QByteArray &roleName) const;

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "pluginorderproxymodel.h"
+#include "quickpanelproxymodel.h"
 
 #include <QDebug>
 #include <DConfig>
@@ -10,24 +10,24 @@ DCORE_USE_NAMESPACE
 
 namespace dock {
 
-PluginOrderProxyModel::PluginOrderProxyModel(QObject *parent)
+QuickPanelProxyModel::QuickPanelProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
     updateQuickPluginsOrder();
     sort(0);
 }
 
-QString PluginOrderProxyModel::getTitle(const QString &pluginName)
+QString QuickPanelProxyModel::getTitle(const QString &pluginName)
 {
     return surfaceValue(pluginName, "title").toString();
 }
 
-QObject *PluginOrderProxyModel::getSurfaceItem(const QString &pluginName)
+QObject *QuickPanelProxyModel::getSurfaceItem(const QString &pluginName)
 {
     return surfaceValue(pluginName).value<QObject *>();
 }
 
-QVariant PluginOrderProxyModel::data(const QModelIndex &index, int role) const
+QVariant QuickPanelProxyModel::data(const QModelIndex &index, int role) const
 {
     switch (role) {
     case Qt::UserRole + 1:
@@ -40,7 +40,7 @@ QVariant PluginOrderProxyModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QHash<int, QByteArray> PluginOrderProxyModel::roleNames() const
+QHash<int, QByteArray> QuickPanelProxyModel::roleNames() const
 {
     const QHash<int, QByteArray> roles {
         {Qt::UserRole + 1, "pluginName"},
@@ -50,7 +50,7 @@ QHash<int, QByteArray> PluginOrderProxyModel::roleNames() const
     return roles;
 }
 
-bool PluginOrderProxyModel::lessThan(const QModelIndex &sourceLeft, const QModelIndex &sourceRight) const
+bool QuickPanelProxyModel::lessThan(const QModelIndex &sourceLeft, const QModelIndex &sourceRight) const
 {
     auto leftOrder = pluginOrder(sourceLeft);
     auto rightOrder = pluginOrder(sourceRight);
@@ -58,22 +58,16 @@ bool PluginOrderProxyModel::lessThan(const QModelIndex &sourceLeft, const QModel
     return leftOrder < rightOrder;
 }
 
-bool PluginOrderProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool QuickPanelProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     const auto index = this->sourceModel()->index(sourceRow, 0, sourceParent);
     if (!index.isValid())
         return false;
     const auto &name = surfaceName(index);
-    qDebug() << "******8"
-             << surfaceValue(index, "itemKey")
-             << surfaceValue(index, "pluginId")
-             << surfaceValue(index, "contextMenu")
-             << surfaceValue(index, "pluginFlags")
-             << surfaceValue(index, "surfaceType");
     return !m_hideInPanelPlugins.contains(name);
 }
 
-void PluginOrderProxyModel::updateQuickPluginsOrder()
+void QuickPanelProxyModel::updateQuickPluginsOrder()
 {
     QScopedPointer<DConfig> dconfig(DConfig::create("org.deepin.ds.dock", "org.deepin.ds.dock.quick-panel"));
     m_quickPlugins = dconfig->value("quickPluginsOrder").toStringList();
@@ -84,7 +78,7 @@ void PluginOrderProxyModel::updateQuickPluginsOrder()
     invalidate();
 }
 
-int PluginOrderProxyModel::pluginOrder(const QModelIndex &index) const
+int QuickPanelProxyModel::pluginOrder(const QModelIndex &index) const
 {
     const auto name = surfaceName(index);
     auto ret = m_quickPlugins.indexOf(name);
@@ -103,27 +97,22 @@ int PluginOrderProxyModel::pluginOrder(const QModelIndex &index) const
     return ret;
 }
 
-int PluginOrderProxyModel::surfaceType(const QModelIndex &index) const
+int QuickPanelProxyModel::surfaceType(const QModelIndex &index) const
 {
     return surfaceValue(index, "surfaceType").toInt();
 }
 
-int PluginOrderProxyModel::surfaceOrder(const QModelIndex &index) const
+int QuickPanelProxyModel::surfaceOrder(const QModelIndex &index) const
 {
     return surfaceValue(index, "order").toInt();
 }
 
-QColor PluginOrderProxyModel::surfaceColor(const QModelIndex &index)
-{
-    return surfaceValue(index, "color").value<QColor>();
-}
-
-QString PluginOrderProxyModel::surfaceName(const QModelIndex &index) const
+QString QuickPanelProxyModel::surfaceName(const QModelIndex &index) const
 {
     return surfaceValue(index, "itemKey").toString();
 }
 
-QVariant PluginOrderProxyModel::surfaceValue(const QModelIndex &index, const QByteArray &roleName) const
+QVariant QuickPanelProxyModel::surfaceValue(const QModelIndex &index, const QByteArray &roleName) const
 {
     if (auto modelData = surfaceObject(index))
         return modelData->property(roleName);
@@ -131,7 +120,7 @@ QVariant PluginOrderProxyModel::surfaceValue(const QModelIndex &index, const QBy
     return {};
 }
 
-QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName, const QByteArray &roleName) const
+QVariant QuickPanelProxyModel::surfaceValue(const QString &pluginName, const QByteArray &roleName) const
 {
     const auto targetModel = surfaceModel();
     for (int i = 0; i < targetModel->rowCount(); i++) {
@@ -146,12 +135,12 @@ QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName, const QB
     return {};
 }
 
-QVariant PluginOrderProxyModel::surfaceValue(const QString &pluginName) const
+QVariant QuickPanelProxyModel::surfaceValue(const QString &pluginName) const
 {
     return surfaceValue(pluginName, {});
 }
 
-QObject *PluginOrderProxyModel::surfaceObject(const QModelIndex &index) const
+QObject *QuickPanelProxyModel::surfaceObject(const QModelIndex &index) const
 {
     const auto modelDataRole = roleByName("shellSurface");
     if (modelDataRole >= 0)
@@ -160,7 +149,7 @@ QObject *PluginOrderProxyModel::surfaceObject(const QModelIndex &index) const
     return nullptr;
 }
 
-int PluginOrderProxyModel::roleByName(const QByteArray &roleName) const
+int QuickPanelProxyModel::roleByName(const QByteArray &roleName) const
 {
     if (!surfaceModel())
         return -1;
@@ -168,7 +157,7 @@ int PluginOrderProxyModel::roleByName(const QByteArray &roleName) const
     return roleNames.key(roleName, -1);
 }
 
-QAbstractListModel *PluginOrderProxyModel::surfaceModel() const
+QAbstractListModel *QuickPanelProxyModel::surfaceModel() const
 {
     return qobject_cast<QAbstractListModel *>(sourceModel());
 }

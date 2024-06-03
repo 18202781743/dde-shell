@@ -8,7 +8,7 @@ import QtQuick.Controls
 import org.deepin.ds.dock 1.0
 import org.deepin.ds.dock.quickpanel 1.0
 
-PluginOrderProxyModel {
+QuickPanelProxyModel {
     id: root
 
     sourceModel: DockCompositor.quickPluginSurfaces
