@@ -15,13 +15,22 @@ import org.deepin.ds.dock 1.0
 AppletItem {
     id: root
     implicitWidth: {
-        return quickpanel.width
+        return panelTrayItem.width
     }
     implicitHeight: {
-        return quickpanel.childrenRect.height
+        return panelTrayItem.height
     }
 
-    property alias popup: popup
+    PanelTrayItem {
+        id: panelTrayItem
+        shellSurface: quickpanelModel.traySurfaceItem
+        onClicked: {
+            var point = Applet.rootObject.mapToItem(null, Applet.rootObject.width / 2, 0)
+            popup.x = point.x
+            popup.y = point.y
+            popup.open()
+        }
+    }
 
     PanelPopup {
         id: popup
@@ -47,6 +56,7 @@ AppletItem {
 
     QuickPanelModel {
         id: quickpanelModel
+        trayItemPluginName: "sound-item-key"
     }
 
 }

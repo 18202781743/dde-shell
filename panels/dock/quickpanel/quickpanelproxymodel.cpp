@@ -14,15 +14,16 @@ QuickPanelProxyModel::QuickPanelProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
     updateQuickPluginsOrder();
+    watchingCountChanged();
     sort(0);
 }
 
-QString QuickPanelProxyModel::getTitle(const QString &pluginName)
+QString QuickPanelProxyModel::getTitle(const QString &pluginName) const
 {
     return surfaceValue(pluginName, "title").toString();
 }
 
-QObject *QuickPanelProxyModel::getSurfaceItem(const QString &pluginName)
+QObject *QuickPanelProxyModel::getSurfaceItem(const QString &pluginName) const
 {
     return surfaceValue(pluginName).value<QObject *>();
 }
@@ -78,6 +79,21 @@ void QuickPanelProxyModel::updateQuickPluginsOrder()
     invalidate();
 }
 
+void QuickPanelProxyModel::watchingCountChanged()
+{
+    static const struct {
+        const char *signalName;
+        const char *slotName;
+    } connectionTable[] = {
+                           { SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(updateTraySurfaceItem()) },
+                           { SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(updateTraySurfaceItem()) },
+                           };
+
+    for (const auto &c : connectionTable) {
+        connect(this, c.signalName, this, c.slotName);
+    }
+}
+
 int QuickPanelProxyModel::pluginOrder(const QModelIndex &index) const
 {
     const auto name = surfaceName(index);
@@ -123,6 +139,8 @@ QVariant QuickPanelProxyModel::surfaceValue(const QModelIndex &index, const QByt
 QVariant QuickPanelProxyModel::surfaceValue(const QString &pluginName, const QByteArray &roleName) const
 {
     const auto targetModel = surfaceModel();
+    if (!targetModel)
+        return {};
     for (int i = 0; i < targetModel->rowCount(); i++) {
         const auto index = targetModel->index(i, 0);
         const auto name = surfaceName(index);
@@ -160,6 +178,33 @@ int QuickPanelProxyModel::roleByName(const QByteArray &roleName) const
 QAbstractListModel *QuickPanelProxyModel::surfaceModel() const
 {
     return qobject_cast<QAbstractListModel *>(sourceModel());
+}
+
+void QuickPanelProxyModel::updateTraySurfaceItem()
+{
+    emit traySurfaceItemChanged();
+}
+
+QObject *QuickPanelProxyModel::traySurfaceItem() const
+{
+    if (m_trayItemPluginName.isEmpty())
+        return nullptr;
+
+    return getSurfaceItem(m_trayItemPluginName);
+}
+
+QString QuickPanelProxyModel::trayItemPluginName() const
+{
+    return m_trayItemPluginName;
+}
+
+void QuickPanelProxyModel::setTrayItemPluginName(const QString &newTrayItemPluginName)
+{
+    if (m_trayItemPluginName == newTrayItemPluginName)
+        return;
+    m_trayItemPluginName = newTrayItemPluginName;
+    emit trayItemPluginNameChanged();
+    updateTraySurfaceItem();
 }
 
 }
