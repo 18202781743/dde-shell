@@ -32,7 +32,7 @@ Item {
             return Qt.size(0.5, 0.5)
         })
         dragItem.DQuickDrag.active = Qt.binding(function () {
-            return dragItem.Drag.active
+            return dragItem.Drag.active && Qt.platform.pluginName === "xcb"
         })
         dragItem.DQuickDrag.overlay = Qt.binding(function () {
             return overlayWindow
@@ -133,6 +133,10 @@ Item {
                     console.log("grab to image", result.url)
 
                     draggingImage = result.url
+                    // On Wayland, use Drag.imageSource instead of DQuickDrag overlay
+                    if (Qt.platform.pluginName !== "xcb") {
+                        dragItem.Drag.imageSource = result.url
+                    }
                 })
             }
             dragItem.Drag.active = active
