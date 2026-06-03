@@ -37,13 +37,6 @@ Item {
         dragItem.DQuickDrag.overlay = Qt.binding(function () {
             return overlayWindow
         })
-        dragItem.Drag.onActiveChanged.connect(function() {
-            if (Qt.platform.pluginName !== "xcb") {
-                dragItem.grabToImage(function(result) {
-                    dragItem.Drag.imageSource = result.url
-                })
-            }
-        })
     }
 
     property string draggingImage
@@ -130,6 +123,23 @@ Item {
         }
     }
 
+    // Set drag image source for Wayland
+    onWidthChanged: {
+        if (Qt.platform.pluginName !== "xcb") {
+            dragItem.grabToImage(function(result) {
+                dragItem.Drag.imageSource = result.url
+            })
+        }
+    }
+
+    onHeightChanged: {
+        if (Qt.platform.pluginName !== "xcb") {
+            dragItem.grabToImage(function(result) {
+                dragItem.Drag.imageSource = result.url
+            })
+        }
+    }
+
     DragHandler {
         id: dragHandler
         enabled: enabledDrag
@@ -138,11 +148,15 @@ Item {
             if (active) {
                 dragItem.grabToImage(function(result) {
                     console.log("grab to image", result.url)
-
                     draggingImage = result.url
+                    // Set drag image for Wayland
+                    if (Qt.platform.pluginName !== "xcb") {
+                        dragItem.Drag.imageSource = result.url
+                    }
                 })
             }
-            dragItem.Drag.active = active
+            // Use Qt.callLater for Wayland compatibility
+            Qt.callLater(function() { dragItem.Drag.active = dragHandler.active })
         }
     }
 }
