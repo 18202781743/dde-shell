@@ -32,7 +32,7 @@ Item {
             return Qt.size(0.5, 0.5)
         })
         dragItem.DQuickDrag.active = Qt.binding(function () {
-            return dragItem.Drag.active && Qt.platform.pluginName === "xcb"
+            return dragItem.Drag.active
         })
         dragItem.DQuickDrag.overlay = Qt.binding(function () {
             return overlayWindow
@@ -105,6 +105,7 @@ Item {
         }
 
         Loader {
+            id: proxyLoader
             active: isFallbackIcon && root.dragItem.DQuickDrag.isDragging
             anchors.centerIn: parent
             anchors.verticalCenterOffset: -root.fallbackIconSize.height / 3 * 2
@@ -112,6 +113,12 @@ Item {
                 shellSurface: root.fallbackDragImage
                 width: root.fallbackIconSize.width
                 height: root.fallbackIconSize.height
+            }
+        }
+
+        onCurrentDragPointChanged: {
+            if (proxyLoader.item) {
+                proxyLoader.item.fixPosition()
             }
         }
     }
@@ -126,10 +133,6 @@ Item {
                     console.log("grab to image", result.url)
 
                     draggingImage = result.url
-                    // On Wayland, use Drag.imageSource instead of DQuickDrag overlay
-                    if (Qt.platform.pluginName !== "xcb") {
-                        dragItem.Drag.imageSource = result.url
-                    }
                 })
             }
             dragItem.Drag.active = active
